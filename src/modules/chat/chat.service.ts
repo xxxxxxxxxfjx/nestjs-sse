@@ -36,9 +36,16 @@ export class ChatService {
     const apiKey = this.configService.get<string>('DEEPSEEK_API_KEY');
     const baseURL = this.configService.get<string>('DEEPSEEK_BASE_URL', 'https://api.deepseek.com/v1');
 
+    this.logger.log(`Initializing ChatService with BaseURL: ${baseURL}`);
+    if (!apiKey) {
+      this.logger.warn('DEEPSEEK_API_KEY is not defined in environment variables!');
+    } else {
+      this.logger.log('DEEPSEEK_API_KEY loaded successfully (length: ' + apiKey.length + ')');
+    }
+
     this.model = new ChatOpenAI({
       modelName: 'deepseek-chat',
-      openAIApiKey: apiKey,
+      apiKey: apiKey,
       configuration: {
         baseURL: baseURL,
       },
@@ -48,6 +55,7 @@ export class ChatService {
   }
 
   getSseStream(userMessage: string = "你好，请自我介绍一下。"): Observable<MessageEvent> {
+    this.logger.log(`Starting SSE stream for message: "${userMessage}"`);
     const sessionId = `chat-session-${Math.random().toString(36).substring(7)}`;
 
     return new Observable<MessageEvent>((subscriber) => {
